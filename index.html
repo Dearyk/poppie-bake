@@ -778,7 +778,7 @@
       color: #76584e;
       line-height: 1.5;
     }
-    
+
     .upload-btn {
       display: block;
       width: 100%;
@@ -813,7 +813,7 @@
       background: #f4ece8;
       color: #76584e;
     }
-    
+
     .btn-secondary:hover {
       background: #e8dbd4;
     }
@@ -822,11 +822,11 @@
       background: #f36b9a;
       color: white;
     }
-    
+
     .btn-primary:hover {
       background: #e95386;
     }
-    
+
     @media(max-width: 480px) {
       .payment-methods {
         grid-template-columns: 1fr;
@@ -1201,7 +1201,7 @@
         alert("กรุณาเลือกสินค้าลงตะกร้าก่อน");
         return;
       }
-      
+
       const name = document.getElementById("customerName").value.trim();
       if (!name) {
         alert("กรุณากรอกชื่อผู้สั่งก่อนดำเนินการต่อ");
@@ -1225,7 +1225,7 @@
 
     function selectPaymentMethod(method) {
       selectedPaymentMethod = method;
-      
+
       // อัปเดต UI กรอบที่เลือก
       document.getElementById("method-transfer").classList.remove("selected");
       document.getElementById("method-cod").classList.remove("selected");
@@ -1354,7 +1354,7 @@
                     "layout": "horizontal",
                     "contents": [
                       { "type": "text", "text": "📍 สถานะ", "size": "sm", "color": "#555555" },
-                      { "type": "text", "text": deliveryType === 'รับหน้าร้าน' ? 'รับที่ร้าน (รอตรวจสอบ)' : 'รอตรวจสอบจัดส่ง', "size": "sm", "color": "#111111", "align": "end", "weight": "bold" }
+                      { "type": "text", "text": deliveryType === 'รับหน้าร้าน' ? 'รับที่ร้าน' : 'รอตรวจสอบจัดส่ง', "size": "sm", "color": "#111111", "align": "end", "weight": "bold" }
                     ]
                   },
                   {
@@ -1393,11 +1393,11 @@
     }
 
     function clearCartAndClose() {
-        cart = [];
-        save();
-        updateCart();
-        closePaymentModal();
-        closeCart();
+      cart = [];
+      save();
+      updateCart();
+      closePaymentModal();
+      closeCart();
     }
 
     function fallbackCopy(text) {
