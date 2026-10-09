@@ -707,6 +707,26 @@
         bottom: 12px
       }
     }
+
+    .payment-modal{position:fixed;inset:0;z-index:60;background:rgba(56,25,18,.48);display:none;align-items:center;justify-content:center;padding:16px}
+    .payment-modal.open{display:flex}
+    .payment-box{background:#fffaf5;border:2px solid #f1d5df;border-radius:24px;padding:24px;width:min(560px,100%);max-height:92vh;overflow:auto;box-shadow:0 20px 60px #4b241d35}
+    .payment-box h2{margin:0 0 8px;color:#d85a83}
+    .payment-box .muted{color:#80645b;font-size:14px;line-height:1.6}
+    .pay-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+    .pay-option{border:2px solid #ead2c7;background:#fff;border-radius:14px;padding:13px;text-align:left;cursor:pointer;color:#5a281d}
+    .pay-option.selected{border-color:#f36b9a;background:#fff0f5}
+    .payment-detail{background:#fff;border:1px solid #efd9ce;border-radius:16px;padding:16px;margin:12px 0}
+    .payment-detail label{display:block;font-size:14px;font-weight:bold;margin:10px 0 5px}
+    .payment-detail input,.payment-detail textarea{width:100%;padding:11px;border:1px solid #e8c8bb;border-radius:10px;font:inherit}
+    .payment-actions{display:flex;gap:10px;margin-top:16px}
+    .payment-actions button{flex:1;border:0;border-radius:12px;padding:13px;font-weight:bold;cursor:pointer}
+    .pay-submit{background:#f36b9a;color:white}
+    .pay-cancel{background:#f7e8e2;color:#5a281d}
+    .pay-total{display:flex;justify-content:space-between;font-size:20px;font-weight:900}
+    .notice{background:#fff4d9;border:1px solid #f0d48d;border-radius:12px;padding:11px;font-size:13px;line-height:1.5}
+    @media(max-width:420px){.pay-options{grid-template-columns:1fr}.payment-box{padding:17px}}
+
   </style>
 </head>
 
@@ -824,9 +844,44 @@
           <span>ยอดรวมทั้งหมด</span>
           <span class="amount" id="cartTotalDisplay">0.-</span>
         </div>
-        <button class="checkout" onclick="orderOnLine()">💬 ยืนยันการสั่งซื้อ</button>
+        <button class="checkout" onclick="openPayment()">💳 ไปหน้าชำระเงิน</button>
       </div>
     </aside>
+  </div>
+
+
+  <div class="payment-modal" id="paymentModal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
+    <div class="payment-box">
+      <div class="panel-head">
+        <div><h2 id="paymentTitle">💳 ชำระเงิน Poppie Bake</h2><div class="muted">ตรวจสอบยอดและเลือกวิธีชำระเงิน</div></div>
+        <button class="close" onclick="closePayment()" aria-label="ปิด">✕</button>
+      </div>
+      <div class="pay-total"><span>ยอดที่ต้องชำระ</span><span id="paymentTotal" style="color:#e95386">0.-</span></div>
+      <div class="pay-options">
+        <button class="pay-option selected" id="transferOption" onclick="selectPayment('transfer')">🏦 โอนเงิน / พร้อมเพย์<br><small>แนบสลิปหลังโอน</small></button>
+        <button class="pay-option" id="codOption" onclick="selectPayment('cod')">🏠 ชำระเงินปลายทาง<br><small>ยืนยันกับร้านก่อนจัดส่ง</small></button>
+      </div>
+      <div class="payment-detail" id="transferDetails">
+        <b>ข้อมูลบัญชีสำหรับโอนเงิน</b>
+        <p class="muted">กรุณาแก้ไขข้อมูลบัญชีในตัวแปร <code>PAYMENT_CONFIG</code> ในโค้ดให้เป็นบัญชีของร้านก่อนเปิดใช้งานจริง</p>
+        <p><b>ธนาคาร:</b> <span id="bankName">กรุณาตั้งค่าธนาคาร</span></p>
+        <p><b>ชื่อบัญชี:</b> <span id="accountName">กรุณาตั้งค่าชื่อบัญชี</span></p>
+        <p><b>เลขบัญชี / พร้อมเพย์:</b> <span id="accountNumber">กรุณาตั้งค่าเลขบัญชี</span></p>
+        <div class="notice">⚠️ โอนเงินเฉพาะบัญชีที่ร้านยืนยันเท่านั้น ระบบนี้ยังไม่ได้เชื่อมต่อธนาคารและไม่สามารถตรวจสอบยอดโอนอัตโนมัติได้</div>
+        <label for="paymentSlip">แนบสลิป (ถ้ามี)</label>
+        <input type="file" id="paymentSlip" accept="image/*">
+        <label for="paymentNote">หมายเหตุถึงร้าน (ถ้ามี)</label>
+        <textarea id="paymentNote" rows="2" placeholder="เช่น เวลาโอน หรือรายละเอียดเพิ่มเติม"></textarea>
+      </div>
+      <div class="payment-detail" id="codDetails" style="display:none">
+        <b>ชำระเงินปลายทาง</b>
+        <p class="muted">คำสั่งซื้อจะถูกส่งให้ร้านตรวจสอบก่อน โปรดยืนยันค่าจัดส่งและพื้นที่ให้บริการกับร้าน</p>
+      </div>
+      <div class="payment-actions">
+        <button class="pay-cancel" onclick="closePayment()">กลับไปแก้ไข</button>
+        <button class="pay-submit" onclick="submitPayment()">ยืนยันคำสั่งซื้อ</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -956,6 +1011,102 @@
 
       document.getElementById("cartTotalDisplay").textContent = money(total);
       footer.style.display = "block";
+    }
+
+
+    // ตั้งค่าข้อมูลบัญชีร้านตรงนี้ก่อนใช้งานจริง
+    const PAYMENT_CONFIG = {
+      bankName: "กรุณาตั้งค่าธนาคาร",
+      accountName: "กรุณาตั้งค่าชื่อบัญชี",
+      accountNumber: "กรุณาตั้งค่าเลขบัญชี"
+    };
+    let selectedPaymentMethod = "transfer";
+
+    function currentTotal() {
+      return cart.reduce((sum, item) => {
+        const product = products.find(p => p.id === item.id);
+        return sum + (product ? product.price * item.qty : 0);
+      }, 0);
+    }
+
+    function openPayment() {
+      if (!cart.length) { alert("กรุณาเลือกสินค้าก่อนชำระเงิน"); return; }
+      if (!document.getElementById("customerName").value.trim()) {
+        alert("กรุณากรอกชื่อผู้สั่งก่อนดำเนินการต่อ");
+        document.getElementById("customerName").focus();
+        return;
+      }
+      document.getElementById("paymentTotal").textContent = money(currentTotal());
+      document.getElementById("bankName").textContent = PAYMENT_CONFIG.bankName;
+      document.getElementById("accountName").textContent = PAYMENT_CONFIG.accountName;
+      document.getElementById("accountNumber").textContent = PAYMENT_CONFIG.accountNumber;
+      document.getElementById("paymentModal").classList.add("open");
+    }
+
+    function closePayment() {
+      document.getElementById("paymentModal").classList.remove("open");
+    }
+
+    function selectPayment(method) {
+      selectedPaymentMethod = method;
+      document.getElementById("transferOption").classList.toggle("selected", method === "transfer");
+      document.getElementById("codOption").classList.toggle("selected", method === "cod");
+      document.getElementById("transferDetails").style.display = method === "transfer" ? "block" : "none";
+      document.getElementById("codDetails").style.display = method === "cod" ? "block" : "none";
+    }
+
+    async function submitPayment() {
+      if (!cart.length) { alert("ไม่มีสินค้าในตะกร้า"); closePayment(); return; }
+      const customerName = document.getElementById("customerName").value.trim();
+      if (!customerName) { alert("กรุณากรอกชื่อผู้สั่ง"); closePayment(); return; }
+      const total = currentTotal();
+      const deliveryType = document.getElementById("deliveryType").value;
+      const orderId = "PB" + Date.now().toString().slice(-8);
+      const note = document.getElementById("paymentNote").value.trim();
+      const slipInput = document.getElementById("paymentSlip");
+      const slip = slipInput.files && slipInput.files[0];
+      if (slip && slip.size > 5 * 1024 * 1024) {
+        alert("ไฟล์สลิปมีขนาดเกิน 5 MB กรุณาเลือกไฟล์ที่เล็กกว่า");
+        return;
+      }
+      const items = cart.map(item => {
+        const p = products.find(x => x.id === item.id);
+        return { name: p.name, price: p.price, qty: item.qty, subtotal: p.price * item.qty };
+      });
+      const order = {
+        orderId, customerName, deliveryType, items, total,
+        paymentMethod: selectedPaymentMethod === "transfer" ? "โอนเงิน/พร้อมเพย์ (รอตรวจสอบ)" : "ชำระเงินปลายทาง (รอร้านยืนยัน)",
+        paymentStatus: selectedPaymentMethod === "transfer" ? "รอตรวจสอบสลิปโดยร้าน" : "รอยืนยันกับร้าน",
+        note, createdAt: new Date().toISOString()
+      };
+      // บันทึกข้อมูลคำสั่งซื้อในเบราว์เซอร์นี้เท่านั้น ไม่ใช่ฐานข้อมูลกลาง
+      const orders = JSON.parse(localStorage.getItem("poppieOrders") || "[]");
+      orders.push(order);
+      localStorage.setItem("poppieOrders", JSON.stringify(orders));
+
+      const textMessage = `คำสั่งซื้อ Poppie Bake #${orderId}\nชื่อ: ${customerName}\nรับสินค้า: ${deliveryType}\nวิธีชำระ: ${order.paymentMethod}\n${items.map(x => `${x.name} x${x.qty} = ${x.subtotal} บาท`).join("\n")}\nยอดรวม: ${total} บาท\nหมายเหตุ: ${note || "-"}\nสถานะ: ${order.paymentStatus}`;
+      closePayment();
+      alert(`บันทึกคำสั่งซื้อ ${orderId} แล้ว\nยอด ${money(total)}\nสถานะ: ${order.paymentStatus}\n\nกดตกลงเพื่อเปิด LINE และส่งรายละเอียดให้ร้าน หากไม่เปิด LINE กรุณาคัดลอกรายละเอียดจากข้อความถัดไป`);
+      try {
+        if (typeof liff !== "undefined") {
+          await liff.ready;
+          if (liff.isInClient()) {
+            await liff.sendMessages([{ type: "text", text: textMessage }]);
+          } else {
+            window.open("https://lin.ee/tnfEavY", "_blank", "noopener");
+            alert(textMessage);
+          }
+        } else {
+          window.open("https://lin.ee/tnfEavY", "_blank", "noopener");
+          alert(textMessage);
+        }
+      } catch (err) {
+        alert(textMessage + "\n\nกรุณาส่งข้อความนี้ให้ร้านผ่าน LINE");
+      }
+      cart = [];
+      save();
+      updateCart();
+      closeCart();
     }
 
     // อัปเกรด Flex Message ให้เหมือนใบเสร็จ
