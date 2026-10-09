@@ -1306,4 +1306,110 @@
                 "layout": "vertical",
                 "margin": "lg",
                 "spacing": "sm",
-                "contents":
+                "contents": [
+                  {
+                    "type": "box",
+                    "layout": "horizontal",
+                    "contents": [
+                      { "type": "text", "text": "🚚 รูปแบบ", "size": "sm", "color": "#555555", "flex": 1 },
+                      { "type": "text", "text": deliveryType, "size": "sm", "color": "#111111", "align": "end", "weight": "bold", "flex": 2 }
+                    ]
+                  },
+                  {
+                    "type": "box",
+                    "layout": "horizontal",
+                    "contents": [
+                      { "type": "text", "text": "💳 ชำระเงิน", "size": "sm", "color": "#555555", "flex": 1 },
+                      { "type": "text", "text": paymentType, "size": "sm", "color": "#111111", "align": "end", "weight": "bold", "flex": 2 }
+                    ]
+                  }
+                ]
+              },
+              { "type": "separator", "margin": "lg" },
+              {
+                "type": "box",
+                "layout": "vertical",
+                "margin": "lg",
+                "spacing": "sm",
+                "contents": itemContents
+              },
+              { "type": "separator", "margin": "lg" },
+              {
+                "type": "box",
+                "layout": "horizontal",
+                "margin": "lg",
+                "contents": [
+                  { "type": "text", "text": "ยอดรวมทั้งหมด", "weight": "bold", "color": "#555555", "size": "sm" },
+                  { "type": "text", "text": `${total} บาท`, "weight": "bold", "align": "end", "color": "#ea5449", "size": "sm" }
+                ]
+              },
+              { "type": "separator", "margin": "lg" },
+              {
+                "type": "box",
+                "layout": "vertical",
+                "margin": "lg",
+                "contents": [
+                  {
+                    "type": "box",
+                    "layout": "horizontal",
+                    "contents": [
+                      { "type": "text", "text": "📍 สถานะ", "size": "sm", "color": "#555555" },
+                      { "type": "text", "text": deliveryType === 'รับหน้าร้าน' ? 'รับที่ร้าน (รอตรวจสอบ)' : 'รอตรวจสอบจัดส่ง', "size": "sm", "color": "#111111", "align": "end", "weight": "bold" }
+                    ]
+                  },
+                  {
+                    "type": "box",
+                    "layout": "horizontal",
+                    "margin": "sm",
+                    "contents": [
+                      { "type": "text", "text": "คุณ: " + customerName, "size": "sm", "color": "#111111", "align": "end", "weight": "bold" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      };
+
+      const textMessage = `รายการที่สั่ง\nคุณ: ${customerName}\nรูปแบบ: ${deliveryType}\nวิธีชำระเงิน: ${paymentType}\n-----------------\n${cart.map(x => {
+        const p = products.find(p => p.id === x.id); return `${p.name} x ${x.qty} =${p.price * x.qty}.-`;
+      }).join("\n")}\n-----------------\nยอดรวมทั้งหมด: ${total} บาท`;
+
+      try {
+        await liff.ready;
+        if (liff.isInClient()) {
+          await liff.sendMessages([flexMessage]);
+          clearCartAndClose();
+          liff.closeWindow();
+        } else {
+          fallbackCopy(textMessage);
+          clearCartAndClose(); // ล้างตะกร้าจำลองเมื่อทดสอบนอกแอป LINE
+        }
+      } catch (err) {
+        fallbackCopy(textMessage);
+        clearCartAndClose();
+      }
+    }
+
+    function clearCartAndClose() {
+        cart = [];
+        save();
+        updateCart();
+        closePaymentModal();
+        closeCart();
+    }
+
+    function fallbackCopy(text) {
+      alert("กรุณาสั่งซื้อผ่านแอป LINE เพื่อประสบการณ์ที่ดีที่สุด\n\nรายละเอียดคำสั่งซื้อ:\n\n" + text);
+    }
+
+    function openCart() { document.getElementById("drawer").classList.add("open"); }
+    function closeCart() { document.getElementById("drawer").classList.remove("open"); }
+
+    renderProducts();
+    updateCart();
+  </script>
+</body>
+
+</html>
