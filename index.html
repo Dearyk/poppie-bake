@@ -1104,6 +1104,11 @@
     ];
 
     let cart = JSON.parse(localStorage.getItem("poppieCart") || "[]");
+
+    // กรองสินค้าที่ไม่มีในระบบออกเพื่อป้องกัน Error
+    cart = cart.filter(item => products.some(p => p.id === item.id));
+    localStorage.setItem("poppieCart", JSON.stringify(cart));
+
     function money(n) { return n.toLocaleString("th-TH") + ".-"; }
 
     // ฟังก์ชันเรนเดอร์สินค้าแยกตามหมวดหมู่
