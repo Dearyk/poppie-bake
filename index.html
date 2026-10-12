@@ -637,7 +637,7 @@
       cursor: pointer;
     }
 
-    /* Modal Styles (CSS ใหม่ที่เพิ่มเข้ามา) */
+    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -1020,7 +1020,7 @@
           <span>ยอดรวมทั้งหมด</span>
           <span class="amount" id="cartTotalDisplay">0.-</span>
         </div>
-        <!-- แก้ไขปุ่มยืนยันการสั่งซื้อเดิม ให้เรียกเปิด Pop-up แทน -->
+        <!-- ปุ่มไปหน้าชำระเงิน -->
         <button class="checkout" onclick="openPaymentModal()" style="background: #198754;">💳 ไปหน้าชำระเงิน</button>
       </div>
     </aside>
@@ -1093,21 +1093,14 @@
       { id: 8, category: "cake", name: "Strawberry Cream Cake", price: 189, desc: "เค้กสตรอว์เบอร์รี่ครีมสด หวานหอม สดชื่น ♥", img: "cake_2.png", tag: "หอมสตรอว์เบอร์รี่ ♥" },
       { id: 9, category: "cake", name: "Birthday Cake", price: 399, desc: "เค้กวันเกิด ดีไซน์น่ารัก พร้อมตกแต่งตามธีมที่ต้องการ ♥", img: "cake_3.png", tag: "สั่งล่วงหน้าได้ค่ะ ♥" },
       // Gift Box
-      { id: 10, category: "giftbox", name: "Mellow Gift Box", price: 249, desc: "กล่องรวมความอร่อย 4 เมนูสุดพิเศษ สำหรับคนพิเศษของคุณ ♥", img: "gift_box.png", tag: "อร่อยครบในกล่องเดียว ♥" },
-      // Bakery เมนูเพิ่มเติมจากภาพที่ส่งมา
-      { id: 11, category: "cake", name: "Strawberry Cheesecake", price: 189, desc: "ชีสเค้กเนื้อนุ่มละมุน ฐานบิสกิตกรุบกรอบ ท็อปด้วยซอสสตรอว์เบอร์รี่และผลไม้สด ♥", img: "cheesecake.png", tag: "เมนูใหม่ 🍓" },
-      { id: 12, category: "pastry", name: "Fresh Fruit Tart", price: 89, desc: "ทาร์ตกรอบหอมเนย ไส้ครีมเนียนนุ่ม แต่งหน้าด้วยผลไม้สดหลากสี ♥", img: "fruit_tart.png", tag: "ผลไม้สด ✨" },
-      { id: 13, category: "cake", name: "Strawberry Cream Roll", price: 169, desc: "โรลเค้กเนื้อนุ่มสอดไส้ครีมสดและสตรอว์เบอร์รี่ หวานละมุนทุกคำ ♥", img: "strawberry_roll.png", tag: "ครีมสดละมุน ♥" },
-      { id: 14, category: "pastry", name: "Butter Croissant", price: 65, desc: "ครัวซองต์อบหอมเนย กรอบเป็นชั้นด้านนอก นุ่มละมุนด้านใน ♥", img: "croissant.png", tag: "อบใหม่ 🥐" },
-      { id: 15, category: "cake", name: "Chocolate Layer Cake", price: 229, desc: "เค้กช็อกโกแลตหลายชั้น สลับครีมช็อกโกแลตเข้มข้น โรยช็อกโกแลตเต็มหน้า ♥", img: "chocolate_layer_cake.png", tag: "สายช็อกโกแลต 🍫" }
+      { id: 10, category: "giftbox", name: "Mellow Gift Box", price: 249, desc: "กล่องรวมความอร่อย 4 เมนูสุดพิเศษ สำหรับคนพิเศษของคุณ ♥", img: "gift_box.png", tag: "อร่อยครบในกล่องเดียว ♥" }
     ];
 
     const categories = [
       { id: "cookie", title: "🍪 คุกกี้โฮมเมด" },
       { id: "brownie", title: "🍫 บราวนี่เข้มข้น" },
       { id: "cake", title: "🍰 เค้กแสนอร่อย" },
-      { id: "giftbox", title: "🎁 เซ็ตของขวัญ (Gift Box)" },
-      { id: "pastry", title: "🥐 ทาร์ตและเบเกอรี่" }
+      { id: "giftbox", title: "🎁 เซ็ตของขวัญ (Gift Box)" }
     ];
 
     let cart = JSON.parse(localStorage.getItem("poppieCart") || "[]");
@@ -1262,18 +1255,55 @@
       }
     }
 
-    // ฟังก์ชันสั่งซื้อ (แก้ไขจาก orderOnLine เพื่อรวมวิธีชำระเงิน)
+
+    // --- ตั้งค่า URL ของ Google Apps Script ที่ได้จากขั้นตอนที่ 2 ---
+    // !!! อย่าลืมเปลี่ยนตรงนี้เป็น URL จริงของคุณ !!!
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyhNy1tYRm1vbqOQJ1g9LBzflwMOgcLZvzix2T6BuOZ9FeNNUlNDZx_zViDfzTyzV_z/exec';
+
+    // ฟังก์ชันสั่งซื้อ (อัปเดตเพื่อส่งข้อมูลไป Google Sheets และ LINE)
     async function confirmOrder() {
       if (cart.length === 0) return;
 
       const customerName = document.getElementById("customerName").value.trim() || "ลูกค้า";
       const deliveryType = document.getElementById("deliveryType").value;
-      // เช็คว่าเลือกวิธีชำระเงินแบบไหน
+
       const paymentType = selectedPaymentMethod === 'cod' ? 'ชำระเงินปลายทาง' : 'โอนเงิน / พร้อมเพย์';
 
       const total = cart.reduce((s, x) => {
         const p = products.find(p => p.id === x.id); return s + p.price * x.qty;
       }, 0);
+
+      // ==========================================
+      // ส่วนที่ 1: เตรียมข้อมูลและส่งไปบันทึกที่ Google Sheets
+      // ==========================================
+
+      const itemsText = cart.map(x => {
+        const p = products.find(p => p.id === x.id);
+        return `${p.name} (x${x.qty})`;
+      }).join(", ");
+
+      const orderData = {
+        customerName: customerName,
+        deliveryType: deliveryType,
+        paymentType: paymentType,
+        items: itemsText,
+        total: total
+      };
+
+      if (scriptURL !== 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
+        fetch(scriptURL, {
+          method: 'POST',
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(orderData)
+        }).then(response => console.log('บันทึกลงระบบหลังบ้านสำเร็จ'))
+          .catch(error => console.error('Error!', error.message));
+      } else {
+        console.warn('ยังไม่ได้ใส่ URL ของ Google Apps Script ข้อมูลจึงยังไม่ส่งไปหลังบ้าน');
+      }
+
+      // ==========================================
+      // ส่วนที่ 2: สร้างและส่ง Flex Message เข้าแชท LINE (โค้ดเดิม)
+      // ==========================================
 
       const itemContents = cart.map(x => {
         const p = products.find(p => p.id === x.id);
@@ -1287,7 +1317,6 @@
         };
       });
 
-      // แจ้งเตือน Flex Message 
       const flexMessage = {
         "type": "flex",
         "altText": "แจ้งรายการสั่งซื้อใหม่ 🧾",
@@ -1391,7 +1420,7 @@
           liff.closeWindow();
         } else {
           fallbackCopy(textMessage);
-          clearCartAndClose(); // ล้างตะกร้าจำลองเมื่อทดสอบนอกแอป LINE
+          clearCartAndClose();
         }
       } catch (err) {
         fallbackCopy(textMessage);
